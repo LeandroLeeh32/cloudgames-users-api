@@ -1,0 +1,11 @@
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\bin\Debug\net8.0\Users.Domain.deps.json
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\bin\Debug\net8.0\Users.Domain.dll
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\bin\Debug\net8.0\Users.Domain.pdb
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.AssemblyInfoInputs.cache
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.AssemblyInfo.cs
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.csproj.CoreCompileInputs.cache
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.dll
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\refint\Users.Domain.dll
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\Users.Domain.pdb
+C:\Estudo-Pos\Segunda-fase\User\CloudGames.Users\UsersAPI.Domain\obj\Debug\net8.0\ref\Users.Domain.dll
