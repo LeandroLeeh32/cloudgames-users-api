@@ -1,0 +1,12 @@
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\bin\Debug\net8.0\CloudGames.Users.Domain.deps.json
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\bin\Debug\net8.0\CloudGames.Users.Domain.dll
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\bin\Debug\net8.0\CloudGames.Users.Domain.pdb
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.AssemblyInfoInputs.cache
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.AssemblyInfo.cs
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.csproj.CoreCompileInputs.cache
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.sourcelink.json
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.dll
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\refint\CloudGames.Users.Domain.dll
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\CloudGames.Users.Domain.pdb
+C:\Sourcetree\fiap-segunda-fase\User\CloudGames.Users.Domain\obj\Debug\net8.0\ref\CloudGames.Users.Domain.dll
