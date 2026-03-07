@@ -1,4 +1,8 @@
-﻿using CloudGames.Users.Application.Interfaces.Security;
+﻿using CloudGames.Users.Application.Interfaces.Messaging;
+using CloudGames.Users.Application.Interfaces.Security;
+using CloudGames.Users.Infrastructure.Messaging.Configuration;
+using CloudGames.Users.Infrastructure.Messaging.EventBus;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +35,34 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+#endregion
+
+#region MASSTRANSIT   
+
+#region MASSTRANSIT
+
+var rabbitSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqSettings>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(
+            rabbitSettings!.Host,
+            rabbitSettings.VirtualHost,
+            h =>
+            {
+                h.Username(rabbitSettings.Username);
+                h.Password(rabbitSettings.Password);
+            });
+    });
+});
+
+#endregion
+
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
 
 #endregion
 
