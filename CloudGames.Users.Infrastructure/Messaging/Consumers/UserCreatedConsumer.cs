@@ -9,9 +9,9 @@ using Users.Domain.Entities;
 
 namespace CloudGames.Users.Infrastructure.Messaging.Consumers
 {
-    public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
+    public class UserCreatedConsumer : IConsumer<UserCreatedIntegrationEvent>
     {
-        public async Task Consume(ConsumeContext<UserCreatedEvent> context)
+        public async Task Consume(ConsumeContext<UserCreatedIntegrationEvent> context)
         {
             var message = context.Message;
 

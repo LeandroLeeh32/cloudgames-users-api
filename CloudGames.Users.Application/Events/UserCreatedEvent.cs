@@ -2,7 +2,7 @@
 
 namespace CloudGames.Users.Application.Events
 {
-    public record UserCreatedEvent(
+    public record UserCreatedIntegrationEvent(
          Guid Id,
          string Name,
          string Email

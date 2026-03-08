@@ -42,20 +42,19 @@ builder.Host.UseNLog();
 
 #region MASSTRANSIT
 
-var rabbitSettings = builder.Configuration.GetSection("RabbitMQ").Get<RabbitMqSettings>();
-
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(
-            rabbitSettings!.Host,
-            rabbitSettings.VirtualHost,
-            h =>
-            {
-                h.Username(rabbitSettings.Username);
-                h.Password(rabbitSettings.Password);
-            });
+        var settings = builder.Configuration
+            .GetSection("RabbitMQ")
+            .Get<RabbitMqSettings>();
+
+        cfg.Host(settings.Host, settings.VirtualHost, h =>
+        {
+            h.Username(settings.Username);
+            h.Password(settings.Password);
+        });
     });
 });
 

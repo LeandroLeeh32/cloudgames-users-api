@@ -7,14 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CloudGames.Users.Domain\CloudGames.Users.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MassTransit" Version="9.0.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CloudGames.Users.Domain\CloudGames.Users.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CloudGames.Contracts">
+      <HintPath>..\..\..\..\Estudo-Pos\Segunda-fase\User\CloudGames.Users\CloudGames.Users.Application\bin\Debug\net8.0\CloudGames.Contracts.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
