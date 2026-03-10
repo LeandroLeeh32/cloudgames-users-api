@@ -1,4 +1,5 @@
-﻿using CloudGames.Users.Application.Events;
+﻿
+using CloudGames.Notifications.Contracts.IntegrationEvents.Users;
 using CloudGames.Users.Application.Interfaces.Messaging;
 using CloudGames.Users.Application.Interfaces.Security;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,6 @@ using Users.Application.Interfaces.Repositories;
 using Users.Domain.Entities;
 using Users.Domain.Enums;
 using Users.Domain.Exceptions;
-using CloudGames.Contracts.IntegrationEvents.Users; 
 
 namespace Users.Application.UseCases.Users
 {
@@ -45,7 +45,7 @@ namespace Users.Application.UseCases.Users
             _logger.LogInformation("[App][CreateUserUseCase] Preparing user for publishing. Id: {UserId}", user.Id);
 
             await _eventPublisher.PublishAsync(
-                new CloudGames.Contracts.IntegrationEvents.Users.UserCreatedIntegrationEvent
+                new UserCreatedIntegrationEvent
                 {
                     Id = user.Id,
                     Name = user.Name,

@@ -18,9 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CloudGames.Contracts">
-      <HintPath>..\..\..\..\Estudo-Pos\Segunda-fase\User\CloudGames.Users\CloudGames.Users.Application\bin\Debug\net8.0\CloudGames.Contracts.dll</HintPath>
-    </Reference>
     <Reference Include="CloudGames.Notifications.Contracts">
       <HintPath>Lib\CloudGames.Notifications.Contracts.dll</HintPath>
     </Reference>
