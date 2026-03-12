@@ -22,7 +22,6 @@ namespace Users.Application.UseCases.Users
         public async Task ExecuteAsync(
             Guid id,
             string name,
-            string email,
             UserRole role)
         {
             _logger.LogInformation(
@@ -34,7 +33,7 @@ namespace Users.Application.UseCases.Users
             if (user is null)
                 throw new DomainException("User not found.");
 
-            user.Update(name, email, role);
+            user.Update(name, role);
 
             await _repository.UpdateAsync(user);
 

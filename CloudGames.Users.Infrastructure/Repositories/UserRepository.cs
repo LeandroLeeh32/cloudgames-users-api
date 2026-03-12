@@ -50,7 +50,7 @@ namespace Users.Infrastructure.Repositories
 
             return await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email.Value == email);
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()

@@ -1,4 +1,5 @@
 ﻿using CloudGames.Users.API.Contracts.Request.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Users.API.Attributes;
 using Users.Application.UseCases.Users;
@@ -7,7 +8,7 @@ namespace Users.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminActive")]
     [ApiDefaultResponses]
     [Produces("application/json")]
     public class UsersController : ControllerBase
@@ -81,7 +82,7 @@ namespace Users.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request)
         {
-            await _update.ExecuteAsync(id, request.Name, request.Email, request.Role);
+            await _update.ExecuteAsync(id, request.Name, request.Role);
             return NoContent();
         }
     }

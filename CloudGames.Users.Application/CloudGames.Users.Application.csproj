@@ -14,13 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CloudGames.Users.Domain\CloudGames.Users.Domain.csproj" />
+    <Folder Include="Lib\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CloudGames.Notifications.Contracts">
-      <HintPath>Lib\CloudGames.Notifications.Contracts.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\CloudGames.Users.Domain\CloudGames.Users.Domain.csproj" />
   </ItemGroup>
 
 </Project>

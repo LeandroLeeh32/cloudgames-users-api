@@ -19,13 +19,17 @@ namespace Users.Infrastructure.Persistence.Configurations
                 value => new Email(value)
             );
 
-            builder.OwnsOne(u => u.Email, email =>
-            {
-                email.Property(e => e.Value)
-                     .HasColumnName("Email")
-                     .IsRequired()
-                     .HasMaxLength(150);
-            });
+            //builder.OwnsOne(u => u.Email, email =>
+            //{
+            //    email.Property(e => e.Value)
+            //         .HasColumnName("Email")
+            //         .IsRequired()
+            //         .HasMaxLength(150);
+            //});
+
+            builder.Property(x => x.Email)
+                   .IsRequired()
+                   .HasMaxLength(100);
 
             var nameConverter = new ValueConverter<Name, string>(
                 name => name.Value,

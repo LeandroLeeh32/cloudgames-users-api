@@ -1,4 +1,5 @@
-﻿using CloudGames.Users.Application.Interfaces.Messaging;
+﻿using CloudGames.Users.API.Security;
+using CloudGames.Users.Application.Interfaces.Messaging;
 using CloudGames.Users.Application.Interfaces.Security;
 using CloudGames.Users.Infrastructure.Messaging.Configuration;
 using CloudGames.Users.Infrastructure.Messaging.EventBus;
@@ -102,6 +103,17 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+#endregion
+
+#region AUTHORIZATION
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.AdminActive, policy =>
+        policy.RequireRole("Admin")
+              .RequireClaim("isActive", "true"));
+});
 
 #endregion
 

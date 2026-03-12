@@ -14,7 +14,7 @@ namespace Users.Domain.Entities
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; }
-        public Email Email { get; private set; }
+        public string Email { get; private set; }
         public string PasswordHash { get; private set; }
         public UserRole Role { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -22,7 +22,7 @@ namespace Users.Domain.Entities
 
         private User() { } // EF
 
-        private User(string name, Email email, string passwordHash, UserRole role)
+        private User(string name, string email, string passwordHash, UserRole role)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new DomainException("Name is required.");
@@ -43,13 +43,12 @@ namespace Users.Domain.Entities
             var nameVo = new Name(name);
             var passwordHashVo = new Password(passWord);
 
-            return new User(nameVo.Value, emailVo, passwordHashVo.Value, role);
+            return new User(nameVo.Value, emailVo.Value, passwordHashVo.Value, role);
         }
 
-        public void Update(string name, string email, UserRole role)
+        public void Update(string name, UserRole role)
         {
-            Name = new Name(email).Value;
-            Email = new Email(email);
+            Name = new Name(name).Value;
             Role = role;
         }
 
