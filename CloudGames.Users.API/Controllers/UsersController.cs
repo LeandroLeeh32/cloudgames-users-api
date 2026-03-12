@@ -50,7 +50,10 @@ namespace Users.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _delete.ExecuteAsync(id);
-            return NoContent();
+            return Ok(new
+            {
+                message = "Disabled user successfully"
+            });
         }
 
         [HttpGet]
@@ -83,7 +86,10 @@ namespace Users.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request)
         {
             await _update.ExecuteAsync(id, request.Name, request.Role);
-            return NoContent();
+            return Ok(new
+            {
+                message = "User updated successfully"
+            });
         }
     }
 }
