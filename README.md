@@ -28,9 +28,6 @@ CloudGames.Users
 ├── CloudGames.Users.Infrastructure
 │ Persistência, mensageria e integrações externas
 
-└── CloudGames.Users.Tests
-Testes unitários
-
 
 ---
 
@@ -56,7 +53,7 @@ Este microserviço é responsável por:
 - Criar usuários
 - Listar usuários
 - Atualizar usuários
-- Remover usuários
+- Desatva usuários
 - Buscar usuário por ID
 - Autenticação com JWT
 - Publicação de eventos para outros microserviços
@@ -78,8 +75,6 @@ UserCreatedIntegrationEvent
 Esse evento pode ser consumido por outros serviços como:
 
 - Notifications
-- Payments
-- Analytics
 
 ---
 
@@ -211,15 +206,6 @@ Verifica usuários existentes
 Cria usuário Admin padrão
 
 
-### Observação de segurança
-
-Em ambiente de **produção**, recomenda-se:
-
-- Alterar a senha do administrador após o primeiro login
-- Ou remover a criação automática
-
----
-
 # Executar o projeto
 
 ### Clonar o repositório
@@ -274,25 +260,6 @@ password: guest
 
 ---
 
-# Executar Testes
-
-
-dotnet test
-
-
-Os testes utilizam:
-
-- xUnit
-- Moq
-
-Eles validam:
-
-- UseCases
-- Consumers
-- Regras de negócio
-
----
-
 # Fluxo geral do sistema
 
 
@@ -320,7 +287,7 @@ Publish Integration Event
 RabbitMQ
 │
 ▼
-Outros Microserviços
+Microserviços
 
 
 ---
@@ -335,7 +302,6 @@ Outros Microserviços
 - Retry Pattern
 - Dead Letter Queue
 - Logging estruturado
-- Testes automatizados
 
 ---
 
@@ -347,4 +313,4 @@ Projeto desenvolvido para estudo de **Arquitetura de Microsserviços com .NET**.
 
 
 FIAP - Arquitetura de Software
-CloudGames Microservices
+CloudGames Microservices USER
