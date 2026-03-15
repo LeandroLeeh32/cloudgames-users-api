@@ -194,6 +194,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var passwordHashService = scope.ServiceProvider.GetRequiredService<IPasswordHashService>();
 
+    await db.Database.MigrateAsync();
     await DatabaseSeeder.SeedAdminAsync(db, passwordHashService);
 }
 
