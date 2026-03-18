@@ -189,6 +189,10 @@ Password: Admin@123
 Role: Admin
 Status: Active
 
+# Descrição do Usuário (role)
+
+1 - user default, 2 - admin
+
 
 ### Fluxo de inicialização
 

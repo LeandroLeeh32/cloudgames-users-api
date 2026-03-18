@@ -14,7 +14,16 @@ namespace CloudGames.Users.Infrastructure.Messaging.EventBus
 
         public async Task PublishAsync<T>(T message) where T : class
         {
-            await _publishEndpoint.Publish(message);
+            try
+            {
+                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+
+                await _publishEndpoint.Publish(message, cts.Token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Message broker is unavailable. Please contact support to enable your user.");
+            }
         }
     }
 }

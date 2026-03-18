@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Web;
 using System.Text;
@@ -30,209 +31,230 @@ var logger = LogManager
 
 #endregion
 
-#region BUILDER
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Logging.ClearProviders();
-builder.Host.UseNLog();
-
-#endregion
-
-#region MASSTRANSIT   
-
-#region MASSTRANSIT
-
-builder.Services.AddMassTransit(x =>
+try
 {
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        var settings = builder.Configuration
-            .GetSection("RabbitMQ")
-            .Get<RabbitMqSettings>();
+    logger.Info("Starting CloudGames.Users API...");
 
-        cfg.Host(settings.Host, settings.VirtualHost, h =>
+    #region BUILDER
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Logging.ClearProviders();
+    builder.Host.UseNLog();
+
+    #endregion
+
+    #region CONFIGURATION
+
+    builder.Services.Configure<RabbitMqSettings>(
+        builder.Configuration.GetSection("RabbitMQ"));
+
+    builder.Services.Configure<JwtSettings>(
+        builder.Configuration.GetSection("JwtSettings"));
+
+    #endregion
+
+    #region MASSTRANSIT
+
+    builder.Services.AddMassTransit(x =>
+    {
+        x.AddConsumers(typeof(Program).Assembly);
+
+        x.UsingRabbitMq((context, cfg) =>
         {
-            h.Username(settings.Username);
-            h.Password(settings.Password);
+            var settings = context.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
+
+            //LOCAL + DOCKER
+            var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+            var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST")
+                             ?? (isDocker ? settings.Host : "localhost");
+
+            logger.Info($"RabbitMQ Host: {rabbitHost}");
+
+            cfg.Host(rabbitHost, settings.VirtualHost, h =>
+            {
+                h.Username(settings.Username);
+                h.Password(settings.Password);
+            });
+
+            cfg.ConfigureEndpoints(context);
         });
     });
-});
 
-#endregion
+    builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
 
-builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
-builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
+    #endregion
 
-#endregion
+    #region DATABASE
 
-#region DATABASE
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-#endregion
-
-#region JWT CONFIGURATION
-
-builder.Services.Configure<JwtSettings>(
-    builder.Configuration.GetSection("JwtSettings"));
-
-builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-
-
-var jwtSettings = builder.Configuration
-    .GetSection("JwtSettings")
-    .Get<JwtSettings>();
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        connectionString = "Data Source=/app/Data/database.db";
+    }
+
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(connectionString));
+
+    #endregion
+
+    #region JWT
+
+    builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+    var jwtSettings = builder.Configuration
+        .GetSection("JwtSettings")
+        .Get<JwtSettings>();
+
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings!.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-#endregion
-
-#region AUTHORIZATION
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(Policies.AdminActive, policy =>
-        policy.RequireRole("Admin")
-              .RequireClaim("isActive", "true"));
-});
-
-#endregion
-
-#region USE CASES
-
-builder.Services.AddScoped<LoginUseCase>();
-
-builder.Services.AddScoped<CreateUserUseCase>();
-builder.Services.AddScoped<GetUsersUseCase>();
-builder.Services.AddScoped<GetUserByIdUseCase>();
-builder.Services.AddScoped<UpdateUserUseCase>();
-builder.Services.AddScoped<DeleteUserUseCase>();
-
-#endregion
-
-#region INFRASTRUCTURE
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
-
-#endregion
-
-#region CONTROLLERS
-
-builder.Services.AddControllers();
-
-#endregion
-
-#region SWAGGER
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "CloudGames.Users API",
-        Version = "v1"
-    });
-
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings!.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+            };
+        });
+
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy(Policies.AdminActive, policy =>
+            policy.RequireRole("Admin")
+                  .RequireClaim("isActive", "true"));
     });
-});
 
-#endregion
+    #endregion
 
-#region BUILD APP
+    #region USE CASES
 
-var app = builder.Build();
+    builder.Services.AddScoped<LoginUseCase>();
+    builder.Services.AddScoped<CreateUserUseCase>();
+    builder.Services.AddScoped<GetUsersUseCase>();
+    builder.Services.AddScoped<GetUserByIdUseCase>();
+    builder.Services.AddScoped<UpdateUserUseCase>();
+    builder.Services.AddScoped<DeleteUserUseCase>();
 
-#endregion
+    #endregion
 
-#region DATABASE SEED
+    #region INFRASTRUCTURE
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var passwordHashService = scope.ServiceProvider.GetRequiredService<IPasswordHashService>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 
-    await db.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAdminAsync(db, passwordHashService);
-}
+    #endregion
 
-#endregion
+    #region CONTROLLERS
 
-#region MIDDLEWARES
+    builder.Services.AddControllers();
 
-app.UseMiddleware<ExceptionMiddleware>();
-app.UseRequestLogging();
+    #endregion
 
-#endregion
+    #region SWAGGER
 
-#region SWAGGER UI
+    builder.Services.AddEndpointsApiExplorer();
 
-if (app.Environment.IsDevelopment())
-{
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "CloudGames.Users API",
+            Version = "v1"
+        });
+
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    });
+
+    #endregion
+
+    #region BUILD
+
+    var app = builder.Build();
+
+    #endregion
+
+    #region DATABASE SEED
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var passwordHashService = scope.ServiceProvider.GetRequiredService<IPasswordHashService>();
+
+        await db.Database.MigrateAsync();
+        await DatabaseSeeder.SeedAdminAsync(db, passwordHashService);
+    }
+
+    #endregion
+
+    #region MIDDLEWARES
+
+    app.UseMiddleware<ExceptionMiddleware>();
+    app.UseRequestLogging();
+
+    #endregion
+
+    #region SWAGGER
+
     app.UseSwagger();
-
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CloudGames.Users API v1");
         c.RoutePrefix = string.Empty;
     });
+
+    #endregion
+
+    #region AUTH
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    #endregion
+
+    #region ENDPOINTS
+
+    app.MapControllers();
+
+    #endregion
+
+    app.Run();
 }
-
-#endregion
-
-#region AUTH
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-#endregion
-
-#region ENDPOINTS
-
-app.MapControllers();
-
-#endregion
-
-app.Run();
+catch (Exception ex)
+{
+    logger.Error(ex, "Application stopped due to exception");
+    throw;
+}
+finally
+{
+    LogManager.Shutdown();
+}

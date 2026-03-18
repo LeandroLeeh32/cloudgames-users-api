@@ -42,8 +42,16 @@ namespace Users.Application.UseCases.Users
             _logger.LogInformation("[App][CreateUserUseCase] User created successfully. Id: {UserId}", user.Id);
 
             _logger.LogInformation("[App][CreateUserUseCase] Preparing user for publishing. Id: {UserId}", user.Id);
-
-            await _eventPublisher.PublishAsync( new UserCreatedIntegrationEvent(user.Id, user.Name, user.Email));
+            try
+            {
+                await _eventPublisher.PublishAsync(new UserCreatedIntegrationEvent(user.Id, user.Name, user.Email));
+            }
+            catch (Exception)
+            {
+                _logger.LogError("[App][CreateUserUseCase] Error published. Id: {UserId}", user.Id);
+                throw;
+            }
+           
 
             _logger.LogInformation("[App][CreateUserUseCase] User successfully published. Id: {UserId}", user.Id);
 
