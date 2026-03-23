@@ -97,8 +97,15 @@ try
 
     #region DATABASE
 
+    
+
     var connectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")
-                           ?? builder.Configuration.GetConnectionString("DefaultConnection");    
+                           ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+    {
+        connectionString = "Data Source=/app/Data/database.db";
+    }
 
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite(connectionString));
