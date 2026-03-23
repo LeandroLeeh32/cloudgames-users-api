@@ -1,0 +1,66 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-api
+  template:
+    metadata:
+      labels:
+        app: users-api
+    spec:
+      containers:
+        - name: users-api
+          image: fiapmicroservicos-users-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: RABBITMQ_HOST
+            - name: RABBITMQ_VIRTUAL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: RABBITMQ_VIRTUAL_HOST
+            - name: DEFAULT_CONNECTION
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: DEFAULT_CONNECTION
+            - name: JWT_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: JWT_ISSUER
+            - name: JWT_AUDIENCE
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: JWT_AUDIENCE
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: users-secret
+                  key: RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: users-secret
+                  key: RABBITMQ_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: users-secret
+                  key: JWT_SECRET

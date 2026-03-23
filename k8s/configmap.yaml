@@ -1,0 +1,11 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-config
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_VIRTUAL_HOST: "/"
+  JWT_ISSUER: "CloudGames.Users"
+  JWT_AUDIENCE: "CloudGames.Users.Client"
+  DEFAULT_CONNECTION: "Data Source=/app/Data/database.db"

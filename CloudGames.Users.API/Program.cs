@@ -64,18 +64,27 @@ try
         {
             var settings = context.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
 
-            //LOCAL + DOCKER
-            var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+            var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "rabbitmq-service";
 
-            var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST")
-                             ?? (isDocker ? settings.Host : "localhost");
+            var rabbitVirtualHost = Environment.GetEnvironmentVariable("RABBITMQ_VIRTUAL_HOST")
+                                     ?? settings.VirtualHost
+                                     ?? "/";
 
+            var rabbitUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME")
+                                 ?? settings.Username
+                                 ?? throw new InvalidOperationException("RABBITMQ_USERNAME não configurado.");
+
+            var rabbitPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD")
+                                 ?? settings.Password
+                                 ?? throw new InvalidOperationException("RABBITMQ_PASSWORD não configurado.");
+
+            logger.Info("PROGRAM NOVA DO USERS");
             logger.Info($"RabbitMQ Host: {rabbitHost}");
 
-            cfg.Host(rabbitHost, settings.VirtualHost, h =>
+            cfg.Host(rabbitHost, rabbitVirtualHost, h =>
             {
-                h.Username(settings.Username);
-                h.Password(settings.Password);
+                h.Username(rabbitUsername);
+                h.Password(rabbitPassword);
             });
 
             cfg.ConfigureEndpoints(context);
@@ -88,12 +97,8 @@ try
 
     #region DATABASE
 
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
-    {
-        connectionString = "Data Source=/app/Data/database.db";
-    }
+    var connectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")
+                           ?? builder.Configuration.GetConnectionString("DefaultConnection");    
 
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite(connectionString));
@@ -104,9 +109,17 @@ try
 
     builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
-    var jwtSettings = builder.Configuration
-        .GetSection("JwtSettings")
-        .Get<JwtSettings>();
+    var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+                    ?? builder.Configuration["JwtSettings:Issuer"]
+                    ?? throw new InvalidOperationException("JWT_ISSUER não configurado.");
+
+    var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+                      ?? builder.Configuration["JwtSettings:Audience"]
+                      ?? throw new InvalidOperationException("JWT_AUDIENCE não configurado.");
+
+    var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
+                    ?? builder.Configuration["JwtSettings:SecretKey"]
+                    ?? throw new InvalidOperationException("JWT_SECRET não configurado.");
 
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -118,10 +131,10 @@ try
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings!.Issuer,
-                ValidAudience = jwtSettings.Audience,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+                    Encoding.UTF8.GetBytes(jwtSecret))
             };
         });
 
