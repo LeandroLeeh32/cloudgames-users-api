@@ -21,6 +21,7 @@ using Users.Infrastructure.Persistence.Context;
 using Users.Infrastructure.Repositories;
 using Users.Infrastructure.Security;
 using Users.Infrastructure.Seed;
+using CloudGames.Notifications.Application.IntegrationEvents.Users;
 
 #region LOGGER
 
@@ -87,6 +88,7 @@ try
                 h.Password(rabbitPassword);
             });
 
+            cfg.Message<UserCreatedIntegrationEvent>(x => x.SetEntityName("UserCreatedIntegrationEvent"));
             cfg.ConfigureEndpoints(context);
         });
     });

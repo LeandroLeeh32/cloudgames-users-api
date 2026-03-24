@@ -184,8 +184,8 @@ Isso garante que o sistema tenha acesso inicial para gerenciamento.
 
 
 Email: admin@cloudgames.com
+Password: Admin@123!
 
-Password: Admin@123
 Role: Admin
 Status: Active
 
