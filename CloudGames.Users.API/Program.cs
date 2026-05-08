@@ -99,8 +99,6 @@ try
 
     #region DATABASE
 
-    
-
     var connectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")
                            ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -252,18 +250,18 @@ try
         c.PreSerializeFilters.Add((swagger, httpReq) =>
         {
             swagger.Servers = new List<OpenApiServer>
-        {
-            new()
             {
-                Url = $"{httpReq.Scheme}://{httpReq.Host}/users"
-            }
-        };
+                new()
+                {
+                    Url = "/users"
+                }
+            };
         });
     });
 
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CloudGames.Users API v1");
+        c.SwaggerEndpoint("/users/swagger/v1/swagger.json", "CloudGames.Users API v1");
         c.RoutePrefix = string.Empty;
     });
 
