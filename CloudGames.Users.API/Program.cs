@@ -255,7 +255,7 @@ try
         {
             new()
             {
-                Url = "/users"
+                Url = $"{httpReq.Scheme}://{httpReq.Host}/users"
             }
         };
         });
