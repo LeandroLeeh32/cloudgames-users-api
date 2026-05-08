@@ -247,7 +247,20 @@ try
 
     #region SWAGGER
 
-    app.UseSwagger();
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swagger, httpReq) =>
+        {
+            swagger.Servers = new List<OpenApiServer>
+        {
+            new()
+            {
+                Url = "/users"
+            }
+        };
+        });
+    });
+
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CloudGames.Users API v1");
