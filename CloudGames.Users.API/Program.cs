@@ -23,6 +23,7 @@ using Users.Infrastructure.Persistence.Mappings;
 using Users.Infrastructure.Repositories;
 using Users.Infrastructure.Security;
 using Users.Infrastructure.Seed;
+using CloudGames.Notifications.Application.IntegrationEvents.Users;
 
 try
 {
@@ -74,6 +75,7 @@ try
                 h.Password(rabbitPassword);
             });
 
+            cfg.Message<UserCreatedIntegrationEvent>(x => x.SetEntityName("UserCreatedIntegrationEvent"));
             cfg.ConfigureEndpoints(context);
         });
     });
@@ -235,10 +237,23 @@ try
 
     #region SWAGGER
 
-    app.UseSwagger();
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swagger, httpReq) =>
+        {
+            swagger.Servers = new List<OpenApiServer>
+            {
+                new()
+                {
+                    Url = "/users"
+                }
+            };
+        });
+    });
+
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CloudGames.Users API v1");
+        c.SwaggerEndpoint("/users/swagger/v1/swagger.json", "CloudGames.Users API v1");
         c.RoutePrefix = string.Empty;
     });
 
