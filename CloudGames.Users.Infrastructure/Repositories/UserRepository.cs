@@ -1,20 +1,18 @@
-﻿
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using Users.Application.Interfaces.Repositories;
 using Users.Domain.Entities;
 using Users.Infrastructure.Persistence.Context;
-
 
 namespace Users.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly AppDbContext _context;
+        private readonly MongoContext _context;
         private readonly ILogger<UserRepository> _logger;
 
         public UserRepository(
-            AppDbContext context,
+            MongoContext context,
             ILogger<UserRepository> logger)
         {
             _context = context;
@@ -24,11 +22,10 @@ namespace Users.Infrastructure.Repositories
         public async Task AddAsync(User user)
         {
             _logger.LogInformation(
-                "[Infrastructure][UserRepository] Persisting new user {UserId} to database",
+                "[Infrastructure][UserRepository] Persisting new user {UserId} to MongoDB",
                 user.Id);
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.InsertOneAsync(user);
         }
 
         public async Task<User?> GetByIdAsync(Guid id)
@@ -38,8 +35,8 @@ namespace Users.Infrastructure.Repositories
                 id);
 
             return await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .Find(u => u.Id == id)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<User?> GetByEmailAsync(string email)
@@ -49,8 +46,8 @@ namespace Users.Infrastructure.Repositories
                 email);
 
             return await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .Find(u => u.Email == email)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -58,7 +55,7 @@ namespace Users.Infrastructure.Repositories
             _logger.LogInformation("[Infrastructure][UserRepository] Fetching all users");
 
             return await _context.Users
-                .AsNoTracking()
+                .Find(FilterDefinition<User>.Empty)
                 .ToListAsync();
         }
 
@@ -68,8 +65,7 @@ namespace Users.Infrastructure.Repositories
                 "[Infrastructure][UserRepository] Updating user {UserId}",
                 user.Id);
 
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
         }
 
         public async Task DeleteAsync(User user)
@@ -78,16 +74,13 @@ namespace Users.Infrastructure.Repositories
                 "[Infrastructure][UserRepository] Removing user {UserId}",
                 user.Id);
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.DeleteOneAsync(u => u.Id == user.Id);
         }
-
 
         public Task SaveChangesAsync()
         {
-            _logger.LogInformation("[Infrastructure][UserRepository] Saving changes");
-
-            return _context.SaveChangesAsync();
+            // No-op para MongoDB (cada operação já é persistida na chamada)
+            return Task.CompletedTask;
         }
     }
 }

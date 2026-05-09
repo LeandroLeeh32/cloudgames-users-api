@@ -1,16 +1,17 @@
-﻿using CloudGames.Users.API.Security;
+using CloudGames.Users.API.Logging;
+using CloudGames.Users.API.Security;
 using CloudGames.Users.Application.Interfaces.Messaging;
 using CloudGames.Users.Application.Interfaces.Security;
 using CloudGames.Users.Infrastructure.Messaging.Configuration;
 using CloudGames.Users.Infrastructure.Messaging.EventBus;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
-using NLog;
-using NLog.Web;
+using MongoDB.Driver;
+using Prometheus;
+using Serilog;
 using System.Text;
 using Users.API.Middlewares;
 using Users.Application.Interfaces.Repositories;
@@ -18,31 +19,18 @@ using Users.Application.Security;
 using Users.Application.UseCases.Auth;
 using Users.Application.UseCases.Users;
 using Users.Infrastructure.Persistence.Context;
+using Users.Infrastructure.Persistence.Mappings;
 using Users.Infrastructure.Repositories;
 using Users.Infrastructure.Security;
 using Users.Infrastructure.Seed;
 
-#region LOGGER
-
-var logger = LogManager
-    .Setup()
-    .LoadConfigurationFromFile("nlog.config")
-    .GetCurrentClassLogger();
-
-#endregion
-
 try
 {
-    logger.Info("Starting CloudGames.Users API...");
-
-    #region BUILDER
-
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Logging.ClearProviders();
-    builder.Host.UseNLog();
+    builder.Host.UseCloudGamesLogging("users-api");
 
-    #endregion
+    Log.Information("Starting CloudGames.Users API...");
 
     #region CONFIGURATION
 
@@ -78,8 +66,7 @@ try
                                  ?? settings.Password
                                  ?? throw new InvalidOperationException("RABBITMQ_PASSWORD não configurado.");
 
-            logger.Info("PROGRAM NOVA DO USERS");
-            logger.Info($"RabbitMQ Host: {rabbitHost}");
+            Log.Information("RabbitMQ Host: {RabbitHost}", rabbitHost);
 
             cfg.Host(rabbitHost, rabbitVirtualHost, h =>
             {
@@ -97,11 +84,25 @@ try
 
     #region DATABASE
 
-    var connectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")
-                           ?? builder.Configuration.GetConnectionString("DefaultConnection");    
+    UserClassMap.Register();
 
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite(connectionString));
+    var mongoConnection = Environment.GetEnvironmentVariable("MongoSettings__ConnectionString")
+                          ?? builder.Configuration["MongoSettings:ConnectionString"]
+                          ?? throw new InvalidOperationException("MongoSettings:ConnectionString não configurado.");
+
+    var mongoDatabase = Environment.GetEnvironmentVariable("MongoSettings__Database")
+                        ?? builder.Configuration["MongoSettings:Database"]
+                        ?? throw new InvalidOperationException("MongoSettings:Database não configurado.");
+
+    var mongoSettings = new MongoSettings
+    {
+        ConnectionString = mongoConnection,
+        Database = mongoDatabase
+    };
+
+    builder.Services.AddSingleton(mongoSettings);
+    builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnection));
+    builder.Services.AddScoped<MongoContext>();
 
     #endregion
 
@@ -210,21 +211,16 @@ try
 
     #endregion
 
-    #region BUILD
-
     var app = builder.Build();
-
-    #endregion
 
     #region DATABASE SEED
 
     using (var scope = app.Services.CreateScope())
     {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<MongoContext>();
         var passwordHashService = scope.ServiceProvider.GetRequiredService<IPasswordHashService>();
 
-        await db.Database.MigrateAsync();
-        await DatabaseSeeder.SeedAdminAsync(db, passwordHashService);
+        await DatabaseSeeder.SeedAdminAsync(context, passwordHashService);
     }
 
     #endregion
@@ -233,6 +229,7 @@ try
 
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseRequestLogging();
+    app.UseHttpMetrics();
 
     #endregion
 
@@ -257,6 +254,7 @@ try
     #region ENDPOINTS
 
     app.MapControllers();
+    app.MapMetrics();
 
     #endregion
 
@@ -264,10 +262,10 @@ try
 }
 catch (Exception ex)
 {
-    logger.Error(ex, "Application stopped due to exception");
+    Log.Fatal(ex, "Application stopped due to exception");
     throw;
 }
 finally
 {
-    LogManager.Shutdown();
+    Log.CloseAndFlush();
 }

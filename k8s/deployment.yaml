@@ -1,4 +1,4 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: users-api
@@ -34,11 +34,26 @@ spec:
                 configMapKeyRef:
                   name: users-config
                   key: RABBITMQ_VIRTUAL_HOST
-            - name: DEFAULT_CONNECTION
+            - name: MongoSettings__ConnectionString
               valueFrom:
                 configMapKeyRef:
                   name: users-config
-                  key: DEFAULT_CONNECTION
+                  key: MongoSettings__ConnectionString
+            - name: MongoSettings__Database
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: MongoSettings__Database
+            - name: Redis__ConnectionString
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: Redis__ConnectionString
+            - name: Redis__LogStream
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: Redis__LogStream
             - name: JWT_ISSUER
               valueFrom:
                 configMapKeyRef:

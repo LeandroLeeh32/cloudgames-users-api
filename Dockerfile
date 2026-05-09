@@ -24,9 +24,6 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# PARA SQLITE
-RUN mkdir -p /app/Data
-
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "CloudGames.Users.API.dll"]

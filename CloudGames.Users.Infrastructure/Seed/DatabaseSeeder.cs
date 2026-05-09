@@ -1,10 +1,5 @@
-﻿using CloudGames.Users.Application.Interfaces.Security;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CloudGames.Users.Application.Interfaces.Security;
+using MongoDB.Driver;
 using Users.Domain.Entities;
 using Users.Domain.Enums;
 using Users.Infrastructure.Persistence.Context;
@@ -14,13 +9,17 @@ namespace Users.Infrastructure.Seed
     public static class DatabaseSeeder
     {
         public static async Task SeedAdminAsync(
-            AppDbContext context,
+            MongoContext context,
             IPasswordHashService passwordHashService)
         {
-            if (await context.Users.AnyAsync())
+            var anyUser = await context.Users
+                .Find(FilterDefinition<User>.Empty)
+                .Limit(1)
+                .AnyAsync();
+
+            if (anyUser)
                 return;
 
-            //criar um usuário admin padrão
             var passwordHash = passwordHashService.Hash("Admin123!");
 
             var admin = User.Create(
@@ -30,9 +29,7 @@ namespace Users.Infrastructure.Seed
                 UserRole.Admin
             );
 
-            context.Users.Add(admin);
-
-            await context.SaveChangesAsync();
+            await context.Users.InsertOneAsync(admin);
         }
     }
 }
