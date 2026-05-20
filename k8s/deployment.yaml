@@ -79,3 +79,8 @@ spec:
                 secretKeyRef:
                   name: users-secret
                   key: JWT_SECRET
+            - name: SWAGGER_GATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: SWAGGER_GATEWAY_URL

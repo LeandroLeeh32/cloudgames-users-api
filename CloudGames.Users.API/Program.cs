@@ -241,11 +241,11 @@ try
     {
         c.PreSerializeFilters.Add((swagger, httpReq) =>
         {
-            var host   = httpReq.Headers["X-Forwarded-Host"].FirstOrDefault() ?? httpReq.Host.Value;
-            var scheme = httpReq.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? httpReq.Scheme;
+            var gateway = Environment.GetEnvironmentVariable("SWAGGER_GATEWAY_URL")
+                          ?? $"{httpReq.Scheme}://{httpReq.Host}";
             swagger.Servers = new List<OpenApiServer>
             {
-                new() { Url = $"{scheme}://{host}/users" }
+                new() { Url = $"{gateway}/users" }
             };
         });
     });
