@@ -18,20 +18,11 @@ namespace Users.API.Middlewares
             var stopwatch = Stopwatch.StartNew();
 
             var request = context.Request;
-
-            _logger.LogInformation("[API][RequestLoggingMiddleware] Request iniciado: {method} {url}", request.Method, request.Path);
-
             try
             {
                 await _next(context);
 
                 stopwatch.Stop();
-
-                _logger.LogInformation("[API][RequestLoggingMiddleware] Request finalizado: {method} {url} StatusCode: {statusCode} Tempo: {elapsed} ms",
-                    request.Method,
-                    request.Path,
-                    context.Response.StatusCode,
-                    stopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
