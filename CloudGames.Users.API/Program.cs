@@ -243,17 +243,14 @@ try
         {
             swagger.Servers = new List<OpenApiServer>
             {
-                new()
-                {
-                    Url = "/users"
-                }
+                new() { Url = $"{httpReq.Scheme}://{httpReq.Host}/users" }
             };
         });
     });
 
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/users/swagger/v1/swagger.json", "CloudGames.Users API v1");
+        c.SwaggerEndpoint("swagger/v1/swagger.json", "CloudGames.Users API v1");
         c.RoutePrefix = string.Empty;
     });
 
