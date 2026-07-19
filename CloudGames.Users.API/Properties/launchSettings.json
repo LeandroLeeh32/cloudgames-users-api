@@ -19,7 +19,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "RABBITMQ_HOST": "localhost",
         "RABBITMQ_USERNAME": "guest",
-        "RABBITMQ_PASSWORD": "guest"
+        "RABBITMQ_PASSWORD": "guest",
+        "JWT_SECRET": "dev-local-jwt-secret-0123456789-0123456789"
       }
     },
     "https": {
@@ -32,7 +33,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "RABBITMQ_HOST": "localhost",
         "RABBITMQ_USERNAME": "guest",
-        "RABBITMQ_PASSWORD": "guest"
+        "RABBITMQ_PASSWORD": "guest",
+        "JWT_SECRET": "dev-local-jwt-secret-0123456789-0123456789"
       }
     },
     "IIS Express": {
@@ -43,7 +45,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "RABBITMQ_HOST": "localhost",
         "RABBITMQ_USERNAME": "guest",
-        "RABBITMQ_PASSWORD": "guest"
+        "RABBITMQ_PASSWORD": "guest",
+        "JWT_SECRET": "dev-local-jwt-secret-0123456789-0123456789"
       }
     }
   }

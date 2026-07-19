@@ -124,6 +124,10 @@ try
                     ?? builder.Configuration["JwtSettings:SecretKey"]
                     ?? throw new InvalidOperationException("JWT_SECRET não configurado.");
 
+    // O segredo não fica mais no appsettings; garante que a assinatura do token
+    // (JwtTokenGenerator) use o mesmo valor injetado via env/Secret.
+    builder.Services.PostConfigure<JwtSettings>(s => s.SecretKey = jwtSecret);
+
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
